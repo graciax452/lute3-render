@@ -70,14 +70,14 @@ def _get_config_file_path(config_file_path=None):
         _print("  (Note these are container paths, not host paths.)")
     _print("")
 
-    return use_config
+    return use_config, ac
 
 
 def _start(args):
     "Configure and start the app."
     _print(f"\nStarting Lute version {__version__}.\n")
 
-    config_file_path = _get_config_file_path(args.config)
+    config_file_path, ac = _get_config_file_path(args.config)
     app = create_app(config_file_path, output_func=_print)
 
  # 👇 COPY BACKUPS from repo to live backup dir
