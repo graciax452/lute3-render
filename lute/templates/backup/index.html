@@ -6,13 +6,12 @@
 
 {% block body %}
 {% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    <ul class="flashes">
-      {% for category, message in messages %}
-        <li class="flash-{{ category }}">{{ message }}</li>
-      {% endfor %}
-    </ul>
-  {% endif %}
+  {% for category, message in messages %}
+    <div class="flash {{ category }}">{{ message }}</div>
+    {% if "Restored backup" in message %}
+      <p><strong>⚠️ Lute is restarting. Please refresh this page after 10–15 seconds.</strong></p>
+    {% endif %}
+  {% endfor %}
 {% endwith %}
 
 

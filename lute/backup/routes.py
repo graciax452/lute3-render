@@ -140,7 +140,7 @@ def restore_backup(filename):
         # Step 4: Connect to restored DB and count books (quick validation)
         Session = scoped_session(sessionmaker(bind=db.engine))
         new_session = Session()
-        book_count = new_session.query(Book).count()
+        book_count = new_session.query(Books).count()
         print(f"📚 Books in restored DB: {book_count}")
         new_session.close()
 
