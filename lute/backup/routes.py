@@ -5,9 +5,12 @@ Backup settings form management, and running backups.
 """
 
 import os
+import sys
 import gzip
 import shutil
 import traceback
+import threading
+import time
 from flask import (
     Blueprint,
     current_app,
@@ -140,19 +143,17 @@ def restore_backup(filename):
         # Step 4: Connect to restored DB and count books (quick validation)
         Session = scoped_session(sessionmaker(bind=db.engine))
         new_session = Session()
-        book_count = new_session.query(Book).count()
+        book_count = new_session.query(Books).count()
         print(f"📚 Books in restored DB: {book_count}")
         new_session.close()
 
-        # Trigger Render restart
-        os.system("touch restart.txt")
-        print("🔁 Triggered app restart.")
-
+        # Print confirmation before restart
         flash(f"✅ Restored backup: {filename} — {book_count} books found.", "notice")
-        flash(f"Restoring from backup: {backup_path}", "notice")
-        flash(f"Restoring to: {db_path}", "notice")
-
         print(f"✅ Restore successful: {filename}")
+        print("🔁 Exiting app to trigger Render restart.")
+
+        os._exit(0)  # This triggers a restart on Render
+
     except Exception as e:
         traceback.print_exc()
         error_msg = f"❌ Failed to restore backup: {str(e)}"
@@ -160,9 +161,3 @@ def restore_backup(filename):
         print(error_msg)
 
     return redirect("/backup/index")
-
-@bp.route("/debug_db")
-def debug_db():
-    from lute.models.book import Book
-    count = db.session.query(Book).count()
-    return f"📚 Book count in current DB: {count}"
