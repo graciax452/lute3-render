@@ -5,6 +5,7 @@ Backup settings form management, and running backups.
 """
 
 import os
+import gzip
 import traceback
 from flask import (
     Blueprint,
@@ -99,3 +100,35 @@ def handle_skip_this_backup():
     service = Service(db.session)
     service.skip_this_backup()
     return redirect("/", 302)
+
+@bp.route("/restore/<filename>", methods=["POST"])
+def restore_backup(filename):
+    """
+    Restore a backup by replacing the active lute.db with the selected backup.
+    """
+    settings = _get_settings()
+    service = Service(db.session)
+
+    try:
+        backup_path = os.path.join(settings.backup_dir, filename)
+        db_path = current_app.env_config.dbfilename
+        backup_tmp_path = db_path + ".restoring"
+
+        # Unzip the .gz backup to a temp file
+        with gzip.open(backup_path, 'rb') as f_in, open(backup_tmp_path, 'wb') as f_out:
+            shutil.copyfileobj(f_in, f_out)
+
+        # Rename current db as a backup
+        original_backup = db_path + ".pre_restore"
+        if os.path.exists(db_path):
+            shutil.move(db_path, original_backup)
+
+        # Move restored db into place
+        shutil.move(backup_tmp_path, db_path)
+
+        flash(f"Restored backup: {filename}", "notice")
+    except Exception as e:
+        traceback.print_exc()
+        flash(f"Failed to restore backup: {str(e)}", "error")
+
+    return redirect("/backup/index")
