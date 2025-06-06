@@ -128,8 +128,12 @@ def start():
         help="Run local only (not accessible on other devices on the same network)",
     )
     parser.add_argument(
-        "--port", type=int, default=5001, help="Port number (default: 5001)"
+        "--port",
+        type=int,
+        default=int(os.environ.get("PORT", 5001)),
+        help="Port number (default: 5001 or $PORT if set)"
     )
+
     parser.add_argument(
         "--config",
         help="Path to override config file.  Uses lute/config/config.yml if not set.",
