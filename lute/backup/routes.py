@@ -21,6 +21,8 @@ from flask import (
 from lute.db import db
 from lute.models.repositories import UserSettingRepository
 from lute.backup.service import Service
+from lute.models.book import Book
+from sqlalchemy.orm import scoped_session, sessionmaker
 
 
 bp = Blueprint("backup", __name__, url_prefix="/backup")
@@ -135,7 +137,18 @@ def restore_backup(filename):
         shutil.move(backup_tmp_path, db_path)
         print("✅ Restored db moved into place.")
 
-        flash(f"✅ Restored backup: {filename}", "notice")
+        # Step 4: Connect to restored DB and count books (quick validation)
+        Session = scoped_session(sessionmaker(bind=db.engine))
+        new_session = Session()
+        book_count = new_session.query(Book).count()
+        print(f"📚 Books in restored DB: {book_count}")
+        new_session.close()
+
+        # Trigger Render restart
+        os.system("touch restart.txt")
+        print("🔁 Triggered app restart.")
+
+        flash(f"✅ Restored backup: {filename} — {book_count} books found.", "notice")
         print(f"✅ Restore successful: {filename}")
     except Exception as e:
         traceback.print_exc()
