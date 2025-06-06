@@ -86,7 +86,7 @@ def _start(args):
     try:
         # Determine source and destination
         src = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backups"))
-        dst = os.path.join(AppConfig.datadir(), "backups")
+        dst = os.path.join(ac.datapath, "backups")
 
         # Create destination if it doesn't exist
         os.makedirs(dst, exist_ok=True)
