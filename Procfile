@@ -1,1 +1,1 @@
-web: python -m lute.main --port=$PORT
+web: python -m lute.main --port=$PORT --restore-backup lute_backup_2025-03-06_060356.db.gz
