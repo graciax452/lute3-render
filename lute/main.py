@@ -79,33 +79,34 @@ def _start(args):
     _print(f"\nStarting Lute version {__version__}.\n")
 
     config_file_path, ac = _get_config_file_path(args.config)
-#    if args.restore_backup:
-#        _restore_backup(ac)
+    
+    # 🔁 Optional restore logic
     if args.restore_backup:
-    try:
-        backup_name = args.restore_backup
-        backup_path = os.path.join(ac.datapath, "backups", backup_name)
-        if not os.path.exists(backup_path):
-            raise FileNotFoundError(f"Backup not found: {backup_path}")
-        
-        live_db = os.path.join(ac.datapath, "lute.db")
-        old_db = os.path.join(ac.datapath, "old_lute.db")
+        try:
+            import gzip
 
-        # Backup current db
-        if os.path.exists(live_db):
-            shutil.move(live_db, old_db)
-            _print(f"🛑 Existing database moved to: {old_db}")
+            backup_name = args.restore_backup
+            backup_path = os.path.join(ac.datapath, "backups", backup_name)
+            if not os.path.exists(backup_path):
+                raise FileNotFoundError(f"Backup not found: {backup_path}")
 
-        # Unzip and restore backup
-        with gzip.open(backup_path, "rb") as f_in, open(live_db, "wb") as f_out:
-            shutil.copyfileobj(f_in, f_out)
+            live_db = os.path.join(ac.datapath, "lute.db")
+            old_db = os.path.join(ac.datapath, "old_lute.db")
 
-        _print(f"✅ Restored database from backup: {backup_name}")
+            # Backup current db
+            if os.path.exists(live_db):
+                shutil.move(live_db, old_db)
+                _print(f"🛑 Existing database moved to: {old_db}")
 
-    except Exception as e:
-        _print(f"⚠️  Failed to restore backup: {e}")
-        return  # or raise to abort start
-    #remove the above later if needed
+            # Unzip and restore backup
+            with gzip.open(backup_path, "rb") as f_in, open(live_db, "wb") as f_out:
+                shutil.copyfileobj(f_in, f_out)
+
+            _print(f"✅ Restored database from backup: {backup_name}")
+
+        except Exception as e:
+            _print(f"⚠️  Failed to restore backup: {e}")
+            return  # Prevents app from starting if restore fails
 
     app = create_app(config_file_path, output_func=_print)
 
