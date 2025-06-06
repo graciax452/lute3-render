@@ -6,6 +6,7 @@ Backup settings form management, and running backups.
 
 import os
 import gzip
+import shutil
 import traceback
 from flask import (
     Blueprint,
