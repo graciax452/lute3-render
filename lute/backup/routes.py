@@ -115,21 +115,32 @@ def restore_backup(filename):
         db_path = current_app.env_config.dbfilename
         backup_tmp_path = db_path + ".restoring"
 
+        print(f"⏳ Starting restore...")
+        print(f"📦 Backup file: {backup_path}")
+        print(f"📍 Current db path: {db_path}")
+        print(f"📂 Temp restore file: {backup_tmp_path}")
+
         # Unzip the .gz backup to a temp file
         with gzip.open(backup_path, 'rb') as f_in, open(backup_tmp_path, 'wb') as f_out:
             shutil.copyfileobj(f_in, f_out)
+            print("✅ Unzipped backup to temp file.")
 
         # Rename current db as a backup
         original_backup = db_path + ".pre_restore"
         if os.path.exists(db_path):
             shutil.move(db_path, original_backup)
+            print(f"📁 Moved existing lute.db to {original_backup}")
 
         # Move restored db into place
         shutil.move(backup_tmp_path, db_path)
+        print("✅ Restored db moved into place.")
 
-        flash(f"Restored backup: {filename}", "notice")
+        flash(f"✅ Restored backup: {filename}", "notice")
+        print(f"✅ Restore successful: {filename}")
     except Exception as e:
         traceback.print_exc()
-        flash(f"Failed to restore backup: {str(e)}", "error")
+        error_msg = f"❌ Failed to restore backup: {str(e)}"
+        flash(error_msg, "error")
+        print(error_msg)
 
     return redirect("/backup/index")
