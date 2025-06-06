@@ -81,11 +81,11 @@ def _start(args):
     app = create_app(config_file_path, output_func=_print)
 
  # 👇 COPY BACKUPS from repo to live backup dir
-      # 👇 Copy .db.gz backups from lute3/backups to app's expected backup dir
+          # 👇 Copy .db.gz backups from lute3/backups to app's expected backup dir
     try:
         # Determine source and destination
         src = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backups"))
-        dst = os.path.join(AppConfig.datadir(), "backups")
+        dst = os.path.join(ac.datapath, "backups")
 
         # Create destination if it doesn't exist
         os.makedirs(dst, exist_ok=True)
@@ -100,6 +100,7 @@ def _start(args):
             _print(f"Backup source directory not found: {src}")
     except Exception as copy_err:
         _print(f"Warning: Failed to copy backups — {copy_err}")
+
     # 👆 COPY BACKUPS from repo to live backup dir
     # delete after copying
 
