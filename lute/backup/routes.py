@@ -167,8 +167,4 @@ def debug_db():
     count = db.session.query(Book).count()
     return f"📚 Book count in current DB: {count}"
 
-    @bp.route("/debug/books")
-def debug_books():
-    from lute.models.book import Book
-    books = db.session.query(Book).all()
-    return "<br>".join([f"{b.id}: {b.title}" for b in books])
+    
