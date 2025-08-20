@@ -47,6 +47,11 @@
     </a>
   </li>
   {% endif %}
+  <li>
+    <a class="reading-menu-item" href="#" onclick="openParseExceptionModal(); return false;">
+      <span>Add parse exception</span>
+    </a>
+  </li>
   <li id="page-operations-li" class="reading-menu-item reading-menu-top-level-li">
     <span id="page-operations-title" class="reading-menu-top-level">Edit</span>
     <div id="page-operations-menu" class="reading-menu-sublist">
@@ -56,6 +61,49 @@
             Edit current page
           </a>
         </li>
+        <!-- Modal for adding parse exception -->
+        <div id="parseExceptionModal" class="modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5);">
+          <div style="background:#fff; margin:10vh auto; padding:20px; border-radius:8px; width:300px; position:relative;">
+            <h3>Add Parse Exception</h3>
+            <form id="parseExceptionForm" onsubmit="submitParseException(); return false;">
+              <label for="exceptionText">Exception rule:</label>
+              <input type="text" id="exceptionText" name="exceptionText" style="width:100%; margin-bottom:10px;" required>
+              <div style="text-align:right;">
+                <button type="button" onclick="closeParseExceptionModal()">Cancel</button>
+                <button type="submit">Save</button>
+              </div>
+            </form>
+          </div>
+        </div>
+        <script>
+          function openParseExceptionModal() {
+            document.getElementById('parseExceptionModal').style.display = 'block';
+          }
+          function closeParseExceptionModal() {
+            document.getElementById('parseExceptionModal').style.display = 'none';
+          }
+          function submitParseException() {
+            var rule = document.getElementById('exceptionText').value;
+            fetch('/add_parse_exception', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+              },
+              body: JSON.stringify({ rule: rule })
+            })
+            .then(response => {
+              if (response.ok) {
+                closeParseExceptionModal();
+                location.reload();
+              } else {
+                response.text().then(text => alert('Error: ' + text));
+              }
+            })
+            .catch(error => alert('Error: ' + error));
+            return false;
+          }
+        </script>
         <li>
           <a id="readmenu_add_page_after" class="reading-menu-item" href="" onclick="add_page_after(); return false;" title="Add page after current page">
             Add page after

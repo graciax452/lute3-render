@@ -1,3 +1,34 @@
+@bp.route("/add_parse_exception", methods=["POST"])
+def add_parse_exception():
+    """Append a parse exception rule to parser_exceptions.txt in the data directory."""
+    import json
+    from flask import current_app, request
+    data = request.get_json()
+    rule = data.get('rule', '').strip()
+    if not rule:
+        return "Missing rule", 400
+
+    # Find the correct data directory
+    app_config = getattr(current_app, 'env_config', None)
+    if app_config and hasattr(app_config, 'userdatadir'):
+        data_dir = app_config.userdatadir
+    else:
+        # Fallback: use platformdirs
+        try:
+            from platformdirs import PlatformDirs
+            dirs = PlatformDirs("Lute3", "Lute3")
+            data_dir = dirs.user_data_dir
+        except Exception:
+            return "Could not determine data directory", 500
+
+    exceptions_file = os.path.join(data_dir, "plugins", "lute_mandarin", "parser_exceptions.txt")
+    os.makedirs(os.path.dirname(exceptions_file), exist_ok=True)
+    try:
+        with open(exceptions_file, "a", encoding="utf-8") as f:
+            f.write(rule + "\n")
+    except Exception as e:
+        return f"Failed to write exception: {str(e)}", 500
+    return "OK", 200
 """
 Backup routes.
 
