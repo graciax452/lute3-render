@@ -127,6 +127,7 @@ def restore_backup(filename):
             shutil.copyfileobj(f_in, f_out)
             print("✅ Unzipped backup to temp file.")
 
+
         # Rename current db as a backup
         original_backup = db_path + ".pre_restore"
         if os.path.exists(db_path):
@@ -137,8 +138,13 @@ def restore_backup(filename):
         shutil.move(backup_tmp_path, db_path)
         print("✅ Restored db moved into place.")
 
-        # Step 4: Connect to restored DB and count books (quick validation)
-        Session = scoped_session(sessionmaker(bind=db.engine))
+        # Dispose the old engine and create a new one to ensure connection to the new DB file
+        db.engine.dispose()
+        from sqlalchemy import create_engine
+        from sqlalchemy.orm import sessionmaker, scoped_session
+        # Recreate engine using the current DB path
+        new_engine = create_engine(f"sqlite:///{db_path}")
+        Session = scoped_session(sessionmaker(bind=new_engine))
         new_session = Session()
         book_count = new_session.query(Book).count()
         print(f"📚 Books in restored DB: {book_count}")
